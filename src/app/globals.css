@@ -1,0 +1,83 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --grid-line: rgba(34, 229, 255, 0.07);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-void text-ink font-body antialiased;
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(228, 0, 43, 0.14), transparent),
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 100% 100%, 44px 44px, 44px 44px;
+}
+
+@layer components {
+  .glass {
+    @apply border border-white/10 bg-white/[0.04] backdrop-blur-xl shadow-glass;
+  }
+  .glass-strong {
+    @apply border border-white/15 bg-carbon/80 backdrop-blur-2xl shadow-glass;
+  }
+  .hud-label {
+    @apply font-arcade text-[10px] tracking-[0.25em] text-neon-cyan uppercase;
+  }
+  .text-glow-red {
+    text-shadow: 0 0 18px rgba(228, 0, 43, 0.8), 0 0 42px rgba(228, 0, 43, 0.4);
+  }
+  .text-glow-cyan {
+    text-shadow: 0 0 18px rgba(34, 229, 255, 0.7);
+  }
+  .btn-arcade {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-brand px-6 py-3.5
+      font-arcade text-xs uppercase tracking-widest text-white shadow-neon-red
+      transition-transform duration-200 ease-out hover:scale-[1.04] hover:bg-brand-bright
+      focus-visible:outline focus-visible:outline-2 focus-visible:outline-neon-cyan
+      active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-neon-cyan/40
+      bg-neon-cyan/5 px-6 py-3.5 font-arcade text-xs uppercase tracking-widest text-neon-cyan
+      transition-all duration-200 hover:border-neon-cyan hover:bg-neon-cyan/10 hover:shadow-neon-cyan
+      focus-visible:outline focus-visible:outline-2 focus-visible:outline-neon-cyan active:scale-95;
+  }
+  .input-arcade {
+    @apply w-full rounded-xl border border-white/10 bg-void/70 px-4 py-3 text-sm text-ink
+      placeholder:text-ink-dim/60 transition-colors focus:border-neon-cyan/60
+      focus:outline-none focus:ring-1 focus:ring-neon-cyan/40;
+  }
+}
+
+/* CRT overlay sutil en el boot */
+.crt::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 2px,
+    rgba(0, 0, 0, 0.18) 3px,
+    rgba(0, 0, 0, 0.18) 4px
+  );
+  z-index: 30;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
