@@ -1,193 +1,342 @@
 'use client';
 
-import { useRef } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
-import { Target, Gamepad2, Wind, Baby, Clapperboard, Car, ArrowUpRight } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { motion, useScroll, useTransform, useSpring, AnimatePresence } from 'framer-motion';
+import {
+  Disc,
+  Snowflake,
+  Baby,
+  Gamepad2,
+  Glasses,
+  Trophy,
+  Sparkles,
+  Check,
+  MapPin,
+  Clock,
+} from 'lucide-react';
 import HUDNav from '@/components/layout/HUDNav';
 import Footer from '@/components/layout/Footer';
 
-// Data con imágenes actualizadas (Bolera Cósmica ahora tiene una imagen específica de bowling neón)
-const ATTRACTIONS = [
-  { 
+interface Attraction {
+  id: string;
+  anchor: string;
+  category: 'Boliche' | 'Pista de Hielo' | 'Zona Kids' | 'Juegos y VR';
+  icon: React.ElementType;
+  name: string;
+  zone: string;
+  level: string;
+  desc: string;
+  image: string;
+}
+
+// Atracciones reales de Recórcholis con tus imágenes locales
+const ATTRACTIONS: Attraction[] = [
+  {
     id: '01',
-    icon: Target, 
-    name: 'Bolera Cósmica', 
-    zone: 'Pista central', 
-    level: 'Familiar', 
-    desc: '8 pistas profesionales con iluminación reactiva, bumpers automatizados para niños y marcadores digitales animados. La experiencia clásica reinventada.',
-    image: 'https://images.unsplash.com/photo-1596464716127-f2a82984de30?q=80&w=2000&auto=format&fit=crop' // Imagen de Bowling Neón
+    anchor: 'boliche',
+    category: 'Boliche',
+    icon: Disc,
+    name: 'Boliche Recórcholis',
+    zone: 'Pistas Familiares',
+    level: 'Todas las edades',
+    desc: 'Pistas profesionales con pantallas interactivas, iluminación ambiental y barreras laterales automáticas para que los niños también hagan chuza.',
+    image: '/images/boliche.jpg',
   },
-  { 
+  {
     id: '02',
-    icon: Gamepad2, 
-    name: 'Arcade Dimension', 
-    zone: 'Ala este', 
-    level: 'Todos', 
-    desc: 'Más de 200 máquinas de última generación. Desde simuladores de carreras hiperrealistas y VR, hasta los clásicos del pinball y air hockey.',
-    image: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=2000&auto=format&fit=crop'
+    anchor: 'pista-hielo',
+    category: 'Pista de Hielo',
+    icon: Snowflake,
+    name: 'Pista de Hielo',
+    zone: 'Ice Rink Recórcholis',
+    level: '4+ años',
+    desc: 'Pista de hielo real con renta de patines en todas las tallas, sesiones libres y andaderas de apoyo para principiantes.',
+    image: '/images/hielo.jpg',
   },
-  { 
+  {
     id: '03',
-    icon: Wind, 
-    name: 'Sky Trampolines', 
-    zone: 'Nivel 2', 
-    level: '6+ años', 
-    desc: 'Desafía la gravedad en nuestros 400 m² de camas elásticas interconectadas. Incluye zonas de dodgeball, basketball slam y una fosa de espuma gigante.',
-    image: 'https://images.unsplash.com/photo-1518609878373-06d740f60d8b?q=80&w=2000&auto=format&fit=crop'
+    anchor: 'zona-kids',
+    category: 'Zona Kids',
+    icon: Baby,
+    name: 'Zona Kids & Playground',
+    zone: 'Área Infantil',
+    level: '1 a 10 años',
+    desc: 'Laberintos multinivel, resbaladillas, albercas de pelotas y juegos didácticos diseñados en un entorno acolchado y seguro para los peques.',
+    image: '/images/zonakid.jpg',
   },
-  { 
+  {
     id: '04',
-    icon: Baby, 
-    name: 'Kiddie Universe', 
-    zone: 'Ala oeste', 
-    level: '1–5 años', 
-    desc: 'Un ecosistema seguro y estimulante para los más pequeños. Estructuras acolchadas, albercas de pelotas y laberintos bajo supervisión constante.',
-    image: 'https://images.unsplash.com/photo-1560662105-57f8ad6ae2d1?q=80&w=2000&auto=format&fit=crop'
+    anchor: 'realidad-virtual',
+    category: 'Juegos y VR',
+    icon: Glasses,
+    name: 'Simuladores y Realidad Virtual',
+    zone: 'Zona VR',
+    level: '7+ años',
+    desc: 'Cabinas inmersivas con visores VR, plataformas con movimiento, montañas rusas virtuales y simuladores de carreras de alta velocidad.',
+    image: '/images/simulador.jpg',
   },
-  { 
+  {
     id: '05',
-    icon: Clapperboard, 
-    name: 'Cine 7D', 
-    zone: 'Entrada principal', 
-    level: '4+ años', 
-    desc: 'Sumérgete en la acción. Sillones con movimiento en 3 ejes, efectos de viento, agua y luces estroboscópicas sincronizadas con cortometrajes 3D.',
-    image: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=2000&auto=format&fit=crop'
+    anchor: 'juegos',
+    category: 'Juegos y VR',
+    icon: Gamepad2,
+    name: 'Máquinas de Videojuegos',
+    zone: 'Arcade Central',
+    level: 'Familiar',
+    desc: 'Los últimos lanzamientos arcade, mesas de Air Hockey, basquetbol, baile y clásicos familiares que se activan al instante con tu Recorcard.',
+    image: 'https://images.unsplash.com/photo-1511882150382-421056c89033?auto=format&fit=crop&w=1000&q=85',
   },
-  { 
+  {
     id: '06',
-    icon: Car, 
-    name: 'Bumper Cars Neón', 
-    zone: 'Pista norte', 
-    level: '5+ años', 
-    desc: 'Autos chocadores del futuro. Vehículos de rotación 360° con barras LED que reaccionan al impacto y a la música envolvente de la arena.',
-    image: 'https://images.unsplash.com/photo-1596464716127-f2a82984de30?q=80&w=2000&auto=format&fit=crop'
+    anchor: 'redencion',
+    category: 'Juegos y VR',
+    icon: Trophy,
+    name: 'Juegos de Destreza y Premios',
+    zone: 'Redemption & Tienda',
+    level: 'Todos',
+    desc: 'Pon a prueba tu puntería y reflejos para acumular tickets electrónicos en tu Recorcard y canjearlos por peluches, gadgets y juguetes.',
+    image: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1000&q=85',
   },
 ];
 
-// Componente individual para cada Atracción
-const AttractionCard = ({ attraction, index }: { attraction: any, index: number }) => {
-  const cardRef = useRef<HTMLDivElement>(null);
-  
-  // Parallax para la imagen
-  const { scrollYProgress } = useScroll({
-    target: cardRef,
-    offset: ["start end", "end start"]
-  });
-  const imageY = useTransform(scrollYProgress, [0, 1], ["-10%", "10%"]);
-  
+const CATEGORIES = ['Todas', 'Boliche', 'Pista de Hielo', 'Zona Kids', 'Juegos y VR'] as const;
+
+// Tarjeta más compacta y ligeramente desplazada para dejar ver la víbora lila
+const AttractionCard = ({ attraction, index }: { attraction: Attraction; index: number }) => {
   const isEven = index % 2 === 0;
+  const Icon = attraction.icon;
 
   return (
-    // Redujimos los márgenes en mobile (mb-16) y el gap (gap-6) para que sea más compacto
-    <div ref={cardRef} className={`relative flex flex-col gap-6 md:gap-12 lg:items-center ${isEven ? 'lg:flex-row' : 'lg:flex-row-reverse'} mb-16 sm:mb-24 md:mb-40`}>
-      
-      {/* Contenedor de Imagen */}
-      <motion.div 
-        // Cambiamos a aspect-video en móvil para que no ocupe toda la pantalla
-        className="relative w-full lg:w-3/5 aspect-video md:aspect-[16/10] overflow-hidden rounded-md group cursor-pointer shadow-sm"
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-50px" }}
-        transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-      >
-        <motion.img 
-          src={attraction.image} 
+    <motion.article
+      layout
+      id={attraction.anchor}
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.96 }}
+      viewport={{ once: true, margin: '-40px' }}
+      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+      className={`group relative flex flex-col ${
+        isEven ? 'lg:flex-row lg:mr-14' : 'lg:flex-row-reverse lg:ml-14'
+      } overflow-hidden rounded-3xl bg-white/95 backdrop-blur-md border border-[#4A0D67]/12 shadow-md hover:shadow-xl hover:shadow-[#4A0D67]/15 transition-all duration-300`}
+    >
+      {/* Contenedor de Imagen más pequeño y compacto */}
+      <div className="relative w-full lg:w-[38%] h-48 sm:h-52 lg:h-auto lg:min-h-[215px] shrink-0 overflow-hidden bg-[#4A0D67]">
+        <img
+          src={attraction.image}
           alt={attraction.name}
-          className="absolute inset-0 h-[120%] w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-          style={{ y: imageY }}
+          className="h-full w-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
         />
-        <div className="absolute inset-0 bg-black/0 transition-colors duration-500 group-hover:bg-black/10" />
-      </motion.div>
+        <div className="absolute inset-0 bg-gradient-to-t from-[#3B0A54]/60 via-transparent to-transparent" />
 
-      {/* Contenedor de Texto */}
-      <div className="flex w-full flex-col lg:w-2/5">
-        <motion.div
-          initial={{ opacity: 0, x: isEven ? 20 : -20 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true, margin: "-50px" }}
-          transition={{ duration: 0.7, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-        >
-          {/* Header del texto */}
-          <div className="flex items-center gap-3 mb-4 md:mb-6">
-            <span className="font-mono text-lg md:text-2xl font-light text-zinc-300">
-              {attraction.id}
-            </span>
-            <div className="h-[1px] flex-1 bg-zinc-200" />
-            <span className="rounded-full border border-[#0055FF]/30 bg-[#0055FF]/5 px-3 py-1 font-mono text-[9px] md:text-[10px] tracking-[0.2em] text-[#0055FF] uppercase">
-              {attraction.level}
-            </span>
-          </div>
-
-          {/* Título y Descripción */}
-          <div className="group cursor-pointer">
-            {/* Tamaño de texto reducido para que encaje perfecto en celular */}
-            <h2 className="font-arcade text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-black transition-colors duration-300 group-hover:text-[#FF003C] uppercase mb-3 md:mb-4 flex items-center gap-2 md:gap-3">
-              {attraction.name}
-              <ArrowUpRight className="h-6 w-6 md:h-8 md:w-8 opacity-0 -translate-x-2 translate-y-2 transition-all duration-300 text-[#FF003C] group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0 hidden md:block" />
-            </h2>
-            
-            <div className="flex items-center gap-2 mb-4 md:mb-6 text-zinc-500 uppercase tracking-widest text-[10px] md:text-xs font-bold font-mono">
-              <attraction.icon className="h-4 w-4 text-[#FF003C]" />
-              {attraction.zone}
-            </div>
-            
-            <p className="text-sm md:text-base lg:text-lg text-zinc-600 leading-relaxed font-sans font-light max-w-md">
-              {attraction.desc}
-            </p>
-          </div>
-        </motion.div>
+        {/* Categoría flotante */}
+        <div className="absolute top-3 left-3 flex flex-wrap items-center gap-1.5">
+          <span className="rounded-full bg-[#D4EB00] px-2.5 py-0.5 text-[11px] font-extrabold text-[#3B0A54] shadow-sm">
+            {attraction.category}
+          </span>
+          <span className="rounded-full bg-[#3B0A54]/85 backdrop-blur-md px-2.5 py-0.5 text-[11px] font-bold text-white">
+            {attraction.level}
+          </span>
+        </div>
       </div>
-    </div>
+
+      {/* Contenedor de Información Compacta */}
+      <div className="flex flex-1 flex-col justify-between p-5 sm:p-6">
+        <div>
+          <div className="flex items-center justify-between gap-2 mb-2">
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-wider text-[#FF5E7E]">
+              <Icon className="h-3.5 w-3.5" />
+              {attraction.zone}
+            </span>
+            <span className="font-mono text-xs font-black text-[#4A0D67]/30">
+              #{attraction.id}
+            </span>
+          </div>
+
+          <h2 className="text-xl sm:text-2xl font-extrabold text-[#3B0A54] group-hover:text-[#6A1B9A] transition-colors tracking-tight">
+            {attraction.name}
+          </h2>
+
+          <p className="mt-2 text-xs sm:text-sm text-[#5C3A70] leading-relaxed">
+            {attraction.desc}
+          </p>
+        </div>
+
+        <div className="mt-4 pt-3 border-t border-[#4A0D67]/10 flex items-center justify-between gap-3">
+          <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-[#4A0D67]/75">
+            <Clock className="h-3.5 w-3.5 text-[#FF5E7E]" />
+            Disponible con Recorcard
+          </span>
+
+          <button
+            onClick={() => window.open('https://www.google.com/maps/search/Recorcholis', '_blank')}
+            className="inline-flex items-center gap-1.5 rounded-full bg-[#F6EFFA] hover:bg-[#D4EB00] px-3.5 py-1.5 text-xs font-extrabold text-[#3B0A54] transition-colors cursor-pointer"
+          >
+            <MapPin className="h-3.5 w-3.5 text-[#FF5E7E]" />
+            Sucursales
+          </button>
+        </div>
+      </div>
+    </motion.article>
   );
 };
 
-
 export default function AtraccionesPage() {
+  const [selectedCategory, setSelectedCategory] = useState<(typeof CATEGORIES)[number]>('Todas');
+  const listRef = useRef<HTMLDivElement>(null);
+
+  // Seguimiento de scroll para dibujar la víbora lila detrás de las tarjetas
+  const { scrollYProgress } = useScroll({
+    target: listRef,
+    offset: ['start 85%', 'end 35%'],
+  });
+
+  const smoothProgress = useSpring(scrollYProgress, {
+    stiffness: 95,
+    damping: 20,
+    restDelta: 0.001,
+  });
+
+  const pathLength = useTransform(smoothProgress, [0, 1], [0.04, 1]);
+
+  const filteredAttractions =
+    selectedCategory === 'Todas'
+      ? ATTRACTIONS
+      : ATTRACTIONS.filter((item) => item.category === selectedCategory);
+
   return (
-    <div className="min-h-dvh bg-white selection:bg-[#FF003C] selection:text-white">
+    <div className="min-h-dvh bg-[#F9F4FC] selection:bg-[#D4EB00] selection:text-[#3B0A54]">
       <HUDNav />
 
-      {/* Paddings reducidos en móvil (pt-24) */}
-      <main className="mx-auto max-w-[1400px] px-6 pb-20 pt-28 md:pt-40 md:pb-16 overflow-hidden">
-        
-        {/* Título Hero de la Página */}
-        <div className="mb-16 md:mb-32 flex flex-col items-start justify-between gap-6 md:gap-8 md:flex-row md:items-end">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
+      {/* --- ENCABEZADO MORADO PREMIUM CON CURVA INFERIOR --- */}
+      <header className="relative overflow-hidden bg-gradient-to-br from-[#4A0D67] via-[#5E1382] to-[#3B0A54] pt-28 pb-20 sm:pt-36 sm:pb-24 px-6 sm:px-10 text-white">
+        <div className="pointer-events-none absolute -top-20 right-10 h-72 w-72 rounded-full bg-[#D4EB00]/15 blur-3xl" />
+        <div className="pointer-events-none absolute bottom-0 left-10 h-72 w-72 rounded-full bg-[#FF5E7E]/20 blur-3xl" />
+
+        <div className="relative z-10 mx-auto max-w-5xl">
+          <motion.div
+            initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, ease: "easeOut" }}
-            className="flex flex-col"
+            transition={{ duration: 0.6 }}
+            className="flex flex-col md:flex-row md:items-end justify-between gap-6"
           >
-            <p className="font-mono text-[10px] md:text-xs uppercase tracking-[0.3em] text-[#0055FF] mb-3 md:mb-4">
-              // Selección de Niveles
+            <div>
+              <span className="inline-flex items-center gap-2 rounded-full bg-white/15 backdrop-blur-md px-4 py-1.5 text-xs font-extrabold text-[#D4EB00] border border-white/20 mb-4">
+                <Sparkles className="h-3.5 w-3.5" />
+                Diversión en cada rincón
+              </span>
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.08]">
+                Nuestras{' '}
+                <span className="text-[#D4EB00]">atracciones</span>
+              </h1>
+            </div>
+
+            <p className="max-w-md text-sm sm:text-base text-white/85 leading-relaxed">
+              Arma tu plan en familia: desde chuzas en el boliche y patinaje sobre hielo, hasta Zona Kids y simuladores.
             </p>
-            {/* Título adaptado: text-4xl en móvil, escala hasta text-7xl en escritorio */}
-            <h1 className="font-arcade text-4xl sm:text-5xl md:text-6xl lg:text-[5.5rem] leading-none text-black drop-shadow-sm">
-              ATRACCIONES
-              <br />
-              <span className="text-[#FF003C]">DISPONIBLES</span>
-            </h1>
           </motion.div>
-          
-          <motion.p 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-            className="max-w-sm text-zinc-500 text-xs sm:text-sm md:text-base font-light leading-relaxed border-l border-[#FF003C]/30 pl-4"
+
+          {/* Píldoras de filtro interactivo */}
+          <div className="mt-8 flex flex-wrap items-center gap-2.5">
+            {CATEGORIES.map((category) => {
+              const isActive = selectedCategory === category;
+              return (
+                <button
+                  key={category}
+                  onClick={() => setSelectedCategory(category)}
+                  className={`inline-flex items-center gap-1.5 rounded-full px-5 py-2 text-xs sm:text-sm font-extrabold transition-all cursor-pointer ${
+                    isActive
+                      ? 'bg-[#D4EB00] text-[#3B0A54] shadow-lg scale-105'
+                      : 'bg-white/15 text-white border border-white/20 hover:bg-white/25'
+                  }`}
+                >
+                  {category}
+                  {isActive && <Check className="h-4 w-4 stroke-[3]" />}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Curva inferior coral y lavanda */}
+        <div className="pointer-events-none absolute bottom-0 left-0 right-0 w-full overflow-hidden leading-none">
+          <svg
+            viewBox="0 0 1440 80"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className="w-full h-10 sm:h-14"
+            preserveAspectRatio="none"
           >
-            Cada sucursal combina zonas distintas. Descubre escenarios inmersivos y filtra por antojo: hay un nivel diseñado exactamente para cada tipo de jugador.
-          </motion.p>
+            <path d="M0,15 C320,5 520,65 860,72 L860,80 L0,80 Z" fill="#FF5E7E" />
+            <path d="M0,45 C420,85 960,75 1440,20 L1440,80 L0,80 Z" fill="#F9F4FC" />
+          </svg>
+        </div>
+      </header>
+
+      {/* --- CONTENEDOR PRINCIPAL CON VÍBORA / FRANJA LILA DELGADA Y AMPLIA AL HACER SCROLL --- */}
+      <main ref={listRef} className="relative mx-auto max-w-5xl px-6 sm:px-10 py-16 sm:py-24 overflow-hidden">
+        {/* VÍBORA LILA DELGADA ONDULANDO DE IZQUIERDA A DERECHA DETRÁS DE LAS ATRACCIONES */}
+        <div className="pointer-events-none absolute inset-0 z-0 flex justify-center overflow-hidden">
+          <svg
+            viewBox="0 0 1000 2200"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-full w-full"
+            preserveAspectRatio="none"
+          >
+            <defs>
+              <linearGradient id="lilacSnakeGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="#C084FC" stopOpacity="0.85" />
+                <stop offset="35%" stopColor="#A855F7" stopOpacity="0.95" />
+                <stop offset="70%" stopColor="#9333EA" stopOpacity="0.9" />
+                <stop offset="100%" stopColor="#FF5E7E" stopOpacity="0.85" />
+              </linearGradient>
+            </defs>
+
+            {/* Riel guía lila muy suave para que se intuya el camino */}
+            <path
+              d="M 500 0 
+                 C 960 150, 960 280, 500 380 
+                 C 40 480, 40 620, 500 740 
+                 C 960 860, 960 1000, 500 1120 
+                 C 40 1240, 40 1380, 500 1500 
+                 C 960 1620, 960 1760, 500 1880 
+                 C 180 1980, 420 2120, 500 2200"
+              stroke="#E9D5FF"
+              strokeWidth="28"
+              strokeLinecap="round"
+            />
+
+            {/* Víbora lila vibrante más delgada (28px) serpenteando de lado a lado con el scroll */}
+            <motion.path
+              d="M 500 0 
+                 C 960 150, 960 280, 500 380 
+                 C 40 480, 40 620, 500 740 
+                 C 960 860, 960 1000, 500 1120 
+                 C 40 1240, 40 1380, 500 1500 
+                 C 960 1620, 960 1760, 500 1880 
+                 C 180 1980, 420 2120, 500 2200"
+              stroke="url(#lilacSnakeGradient)"
+              strokeWidth="28"
+              strokeLinecap="round"
+              style={{ pathLength }}
+            />
+          </svg>
         </div>
 
-        {/* Lista de Atracciones */}
-        <div className="relative w-full">
-          {ATTRACTIONS.map((attraction, index) => (
-            <AttractionCard key={attraction.id} attraction={attraction} index={index} />
-          ))}
-        </div>
-
+        {/* LISTA DE ATRACCIONES CON MÁS SEPARACIÓN VERTICAL PARA QUE LUZCA LA VÍBORA LILA */}
+        <motion.div layout className="relative z-10 flex flex-col gap-14 sm:gap-20">
+          <AnimatePresence mode="popLayout">
+            {filteredAttractions.map((attraction, index) => (
+              <AttractionCard
+                key={attraction.id}
+                attraction={attraction}
+                index={index}
+              />
+            ))}
+          </AnimatePresence>
+        </motion.div>
       </main>
-      
+
       <Footer />
     </div>
   );

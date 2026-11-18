@@ -2,77 +2,92 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Gamepad2, Disc, Wind, Baby } from 'lucide-react';
-import { GlassPanel } from '@/components/ui/GlassPanel';
+import { ArrowRight } from 'lucide-react';
 
-const FEATURES = [
+const ATTRACTIONS = [
   {
-    icon: Disc,
-    title: 'Boleras cósmicas',
-    desc: 'Pistas neón, efectos especiales y torneos familiares cada fin de semana.',
-    tag: 'nivel 01',
-    href: '/atracciones',
+    id: 'boliche',
+    title: 'Boliche',
+    desc: 'Pistas iluminadas y carriles familiares para jugar con todos.',
+    image: '/images/boliche.jpg',
+    badge: 'Plan Favorito',
+    href: '/atracciones#boliche',
   },
   {
-    icon: Gamepad2,
-    title: 'Arcade legendario',
-    desc: 'Más de 200 máquinas: clásicos retro, simuladores y VR de última generación.',
-    tag: 'nivel 02',
-    href: '/atracciones',
-  },
-  {
-    icon: Wind,
-    title: 'Zona de trampolines',
-    desc: 'Parques de aire libre con dodgeball, canasta slam y foam pit gigante.',
-    tag: 'nivel 03',
-    href: '/atracciones',
-  },
-  {
-    icon: Baby,
-    title: 'Kiddie zone',
-    desc: 'Universo seguro para los más pequeños con juegos didácticos y suaves.',
-    tag: 'nivel 04',
-    href: '/atracciones',
+    id: 'pista-hielo',
+    title: 'Pista de Hielo',
+    desc: 'Deslízate en familia con renta de patines y apoyo para principiantes.',
+    image: '/images/hielo.jpg',
+    badge: 'Diversión en familia',
+    href: '/atracciones#pista-hielo',
   },
 ];
 
 export default function FeatureGrid() {
   return (
-    <section className="mx-auto max-w-6xl px-6 py-20">
-      <p className="hud-label mb-3">elige tu nivel</p>
-      <h2 className="font-arcade text-xl text-ink sm:text-3xl">
-        ATRACCIONES <span className="text-glow-red text-brand-bright">ESTRELLA</span>
-      </h2>
-
-      <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        {FEATURES.map(({ icon: Icon, title, desc, tag, href }, i) => (
-          <motion.div
-            key={title}
-            initial={{ opacity: 0, y: 28 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-60px' }}
-            transition={{ delay: i * 0.08, duration: 0.5 }}
+    <section
+      id="atracciones"
+      className="w-full bg-[#F9F4FC] py-12 px-6 sm:px-10 lg:px-12"
+    >
+      <div className="mx-auto max-w-5xl">
+        {/* Encabezado compacto */}
+        <div className="mb-7 flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-[#3B0A54] tracking-tight">
+            Atracciones destacadas
+          </h2>
+          <Link
+            href="/atracciones"
+            className="inline-flex items-center gap-1 text-sm font-extrabold text-[#4A0D67] hover:text-[#FF5E7E] transition-colors"
           >
-            <Link
-              href={href}
-              className="group block h-full rounded-2xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-neon-cyan"
+            Ver todas <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+
+        {/* Grid de 2 tarjetas compactas */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          {ATTRACTIONS.map((item, i) => (
+            <motion.div
+              key={item.id}
+              id={item.id}
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.1, duration: 0.4 }}
             >
-              <GlassPanel className="h-full p-6 transition-all duration-300 group-hover:-translate-y-1.5 group-hover:border-brand/50 group-hover:shadow-neon-red">
-                <div className="flex items-center justify-between">
-                  <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand/15 text-brand-bright transition-colors group-hover:bg-brand group-hover:text-white">
-                    <Icon className="h-6 w-6" />
+              <Link
+                href={item.href}
+                className="group block overflow-hidden rounded-2xl bg-white border border-[#4A0D67]/10 shadow-sm hover:shadow-md transition-all hover:-translate-y-1"
+              >
+                {/* Imagen */}
+                <div className="relative h-48 w-full overflow-hidden bg-[#4A0D67]">
+                  <img
+                    src={item.image}
+                    alt={item.title}
+                    className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
+                  />
+                  <span className="absolute top-3 left-3 rounded-full bg-[#D4EB00] px-3 py-1 text-xs font-extrabold text-[#3B0A54]">
+                    {item.badge}
                   </span>
-                  <span className="font-arcade text-[8px] tracking-widest text-ink-dim/60">{tag}</span>
                 </div>
-                <h3 className="mt-5 font-arcade text-xs leading-relaxed text-ink">{title}</h3>
-                <p className="mt-3 text-sm leading-relaxed text-ink-dim">{desc}</p>
-                <p className="mt-5 font-arcade text-[9px] uppercase tracking-widest text-neon-cyan opacity-0 transition-opacity group-hover:opacity-100">
-                  jugar →
-                </p>
-              </GlassPanel>
-            </Link>
-          </motion.div>
-        ))}
+
+                {/* Texto corto */}
+                <div className="p-5 flex items-center justify-between gap-4">
+                  <div>
+                    <h3 className="text-xl font-extrabold text-[#3B0A54]">
+                      {item.title}
+                    </h3>
+                    <p className="mt-1 text-sm text-[#5C3A70] line-clamp-2">
+                      {item.desc}
+                    </p>
+                  </div>
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#F6EFFA] text-[#4A0D67] group-hover:bg-[#D4EB00] transition-colors">
+                    <ArrowRight className="h-5 w-5" />
+                  </span>
+                </div>
+              </Link>
+            </motion.div>
+          ))}
+        </div>
       </div>
     </section>
   );
