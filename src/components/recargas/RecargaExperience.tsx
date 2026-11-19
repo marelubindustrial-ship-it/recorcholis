@@ -386,13 +386,13 @@ export default function RecargaExperience() {
     };
   };
 
-  useEffect(() => {
+useEffect(() => {
     if (typeof window === 'undefined') return;
     const params = new URLSearchParams(window.location.search);
     const urlMonto = Number(params.get('monto'));
     const urlCupon = params.get('cupon');
 
-    if (urlMonto && ALLOWED_TOPUP_AMOUNTS.includes(urlMonto)) {
+    if (urlMonto && (ALLOWED_TOPUP_AMOUNTS as readonly number[]).includes(urlMonto)) {
       setAmount(urlMonto);
     }
     if (urlCupon) {
